@@ -53,14 +53,16 @@ Thumbs.db
 *.AppImage
 
 # Logs and debugging
+logs/
 logs/*.log
 logs/*.txt
 tests/output/
-rca/*.log
 
-# Large test files
-samples/*.mov
-samples/*.mp4
-samples/*.mkv
-samples/*_temp_audio.mp3
-samples/*_Clips/
+# Testing and samples
+testing/
+samples/
+*.mov
+*.mp4
+*.mkv
+*_temp_audio.mp3
+*_Clips/
