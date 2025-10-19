@@ -2,17 +2,17 @@
 
 **AI-powered video clip extraction tool** - Automatically identify and extract the most important moments from meeting recordings using AI.
 
-![ClipScribe](https://img.shields.io/badge/version-1.0.0-blue)
+![ClipScribe](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
 
-✨ **AI-Powered Analysis** - Uses OpenAI GPT-4 to intelligently identify key moments in meetings  
+✨ **AI-Powered Analysis** - Uses OpenAI GPT-5-mini to intelligently identify key moments  
 🎬 **Automatic Clip Generation** - Extracts video clips with precise timestamps  
 📝 **VTT Support** - Works with WebVTT transcript files  
-🎤 **Auto-Transcription** - NEW! Generate transcripts automatically using Whisper AI  
-🖥️ **Cross-Platform** - Runs on macOS (Intel & Apple Silicon) and Windows  
-⚡ **Fast Processing** - Uses FFmpeg stream copy for quick clip extraction  
+🎤 **Auto-Transcription** - Generate transcripts automatically using Whisper AI  
+🖥️ **Platform** - Tested on macOS Apple Silicon (other platforms not yet tested)  
+⚡ **Smart Processing** - H.264 encoding for universal codec compatibility  
 🔒 **Secure** - API keys stored encrypted locally
 
 ## Prerequisites
@@ -30,7 +30,7 @@ Before you begin, ensure you have:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/clipscribe.git
+   git clone https://github.com/williamrthomas/clipscribe.git
    cd clipscribe
    ```
 
@@ -59,6 +59,8 @@ This will create installers in `src-tauri/target/release/bundle/`:
 ## FFmpeg Setup
 
 ClipScribe requires FFmpeg as a bundled binary for video processing.
+
+> **Note:** ClipScribe has been tested on macOS Apple Silicon. Intel Mac and Windows builds are included but not yet tested.
 
 ### macOS
 
@@ -229,7 +231,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- OpenAI for GPT-4 API
+- OpenAI for GPT-5-mini API
 - FFmpeg for video processing
 - Tauri for the desktop framework
 - React and the open-source community
@@ -237,8 +239,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues, questions, or suggestions:
-- 📧 Email: support@clipscribe.app
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/clipscribe/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/williamrthomas/clipscribe/issues)
 - 📖 Docs: [Full Documentation](docs/)
 
 ---
