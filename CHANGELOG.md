@@ -91,6 +91,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AAC audio encoding for universal compatibility
 - Comprehensive FFmpeg logging to stdout/stderr
 
+## [1.2.0] - 2024-10-19
+
+### Added
+- **GPT-5-mini Integration** - Upgraded from GPT-4 Turbo to GPT-5-mini with Responses API
+- **User instruction priority system** - User context now always overrides default prompts
+- **VTT-aware analysis** - AI analyzes full VTT structure for better timestamp accuracy
+- **Excitement-focused defaults** - New prompt finds interesting/exciting moments by default
+- **Enhanced logging** - Comprehensive debugging output for API interactions
+- **Proper error detection** - Distinguishes between null errors and actual failures
+
+### Changed
+- **Clip length range** - Expanded from 15-90s to 10-120s
+- **Clip count** - Increased from 3-7 to 3-8 clips maximum
+- **Prompt structure** - User instructions always listed first in prompt
+- **API endpoint** - Switched from Chat Completions to Responses API
+
+### Fixed
+- **Response parsing** - Correctly handles nested GPT-5 response structure
+- **Error detection** - No longer treats successful responses as errors
+
+### Technical
+- Responses API integration with nested output structure
+- Minimal reasoning effort for fast, cost-effective analysis
+- Low verbosity for concise JSON responses
+- Full VTT formatting preserves cue structure
+
 ## [Unreleased]
 
 ### Planned Features
@@ -100,6 +126,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Local Whisper model option (free but slower)
 - Clip preview before generation
 - Batch processing multiple videos
+- Clip quality scoring and ranking
+- Overlap detection
+- Dynamic reasoning effort based on video complexity
 - Custom clip padding (add seconds before/after)
 - Export settings (resolution, bitrate, format)
 - Alternative AI providers (Anthropic Claude, Azure OpenAI)

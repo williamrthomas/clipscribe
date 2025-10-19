@@ -98,11 +98,29 @@ impl VttParser {
         Some(hours * 3600 + minutes * 60 + seconds)
     }
     
-    /// Get full transcript as plain text
+    /// Get full transcript as plain text (legacy format)
     pub fn get_full_transcript(cues: &[VttCue]) -> String {
         cues.iter()
             .map(|cue| format!("[{}] {}", cue.start_timestamp, cue.text))
             .collect::<Vec<_>>()
             .join("\n")
+    }
+    
+    /// Get formatted VTT with timestamps for AI analysis
+    /// Returns VTT in format that preserves structure for GPT-5
+    pub fn get_formatted_vtt(cues: &[VttCue]) -> String {
+        let mut formatted = String::from("WEBVTT - Video Transcript\n\n");
+        
+        for (index, cue) in cues.iter().enumerate() {
+            formatted.push_str(&format!(
+                "{}\n{} --> {}\n{}\n\n",
+                index + 1,
+                cue.start_timestamp,
+                cue.end_timestamp,
+                cue.text
+            ));
+        }
+        
+        formatted
     }
 }

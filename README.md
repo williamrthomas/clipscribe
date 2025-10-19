@@ -139,7 +139,7 @@ clipscribe/
 
 1. **Upload** - You provide a video file and VTT transcript
 2. **Parse** - ClipScribe parses the transcript to extract timestamps and text
-3. **Analyze** - OpenAI GPT-4 analyzes the transcript to identify key moments
+3. **AI-powered clip extraction** - GPT-5-mini analyzes transcripts and identifies key moments
 4. **Validate** - Timestamps are validated and mapped to actual VTT cues
 5. **Extract** - FFmpeg extracts video clips using precise timestamps
 6. **Save** - Clips are saved with descriptive filenames in a new folder
@@ -193,7 +193,7 @@ ClipScribe uses OpenAI's APIs. Approximate costs:
 
 - **Frontend**: React 18, TypeScript, TailwindCSS
 - **Backend**: Rust, Tauri 1.5
-- **AI**: OpenAI GPT-4 Turbo
+- **AI**: OpenAI GPT-5-mini (Responses API)
 - **Video Processing**: FFmpeg
 
 ### Running Tests

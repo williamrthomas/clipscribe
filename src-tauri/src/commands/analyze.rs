@@ -3,6 +3,8 @@ use crate::services::{VttParser, OpenAIService};
 use crate::commands::settings::get_api_key;
 use tauri::{command, AppHandle};
 
+// Need Clone for ClipSuggestion in validation logging
+
 #[command]
 pub async fn analyze_transcript_for_clips(
     app_handle: AppHandle,
@@ -16,22 +18,36 @@ pub async fn analyze_transcript_for_clips(
     
     // 2. Parse VTT file
     let vtt_cues = VttParser::parse(&transcript_path)?;
-    let full_transcript = VttParser::get_full_transcript(&vtt_cues);
     
-    // 3. Call OpenAI
+    // 3. Format VTT with full structure (timestamps, cue numbers) for GPT-5
+    let formatted_vtt = VttParser::get_formatted_vtt(&vtt_cues);
+    
+    println!("=== Analyzing Transcript ===");
+    println!("VTT cues: {}", vtt_cues.len());
+    println!("User context: {}", user_context.as_deref().unwrap_or("None"));
+    
+    // 4. Call OpenAI GPT-5-mini
     let raw_clips = OpenAIService::analyze_transcript(
         &api_key,
-        &full_transcript,
+        &formatted_vtt,
         user_context.as_deref(),
     ).await?;
     
-    // 4. Validate and map timestamps to actual VTT cues
-    let validated_clips = raw_clips
+    // 5. Validate and map timestamps to actual VTT cues
+    println!("=== Validating {} Suggested Clips ===", raw_clips.len());
+    
+    let validated_clips: Vec<ValidatedClip> = raw_clips
         .into_iter()
         .filter_map(|clip| {
-            validate_and_map_clip(clip, &vtt_cues)
+            let result = validate_and_map_clip(clip.clone(), &vtt_cues);
+            if result.is_none() {
+                println!("⚠️  Rejected clip: {} ({} -> {})", clip.title, clip.start_time, clip.end_time);
+            }
+            result
         })
         .collect();
+    
+    println!("✅ Validated {} clips", validated_clips.len());
     
     Ok(validated_clips)
 }
