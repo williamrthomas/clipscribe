@@ -148,16 +148,17 @@ clipscribe/
 
 ClipScribe uses OpenAI's APIs. Approximate costs:
 
-**GPT-4 Turbo (Clip Analysis):**
-- **Per analysis**: $0.01 - $0.10 (depending on transcript length)
-- Most meetings under 2 hours: < $0.05
+**GPT-5-mini (Clip Analysis):**
+- **Per analysis**: $0.01 - $0.08 (depending on transcript length)
+- Uses minimal reasoning effort for cost optimization
+- Most videos under 1 hour: < $0.05
 
 **Whisper (Auto-Transcription):** *(Optional)*
 - **Per minute**: $0.006
-- 30-minute meeting: ~$0.18
-- 1-hour meeting: ~$0.36
+- 30-minute video: ~$0.18
+- 1-hour video: ~$0.36
 
-**Total typical cost:** $0.20 - $0.50 per video with auto-transcription
+**Total typical cost:** $0.20 - $0.45 per video with auto-transcription
 
 ## Troubleshooting
 

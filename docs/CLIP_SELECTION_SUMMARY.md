@@ -1,65 +1,65 @@
-# Clip Selection - Current Implementation Summary
+# Clip Selection - Current Implementation Summary (v1.2.0)
 
 ## Key Details
 
-### Model Configuration
-- **Model**: `gpt-4-turbo-preview` (hardcoded)
-- **Temperature**: `0.3` (low randomness for consistency)
-- **Max Tokens**: Not explicitly set (defaults to model max)
-- **Response Format**: JSON object array
+### Model Configuration ✅ Updated
+- **Model**: `gpt-5-mini-2025-08-07`
+- **API**: Responses API (`/v1/responses`)
+- **Reasoning Effort**: `minimal` (fast, cost-optimized)
+- **Verbosity**: `low` (concise JSON output)
+- **Response Format**: Nested structure → `output[].content[].text`
 
-### Current Prompt Strategy
+### Current Prompt Strategy ✅ Updated
 
-**System Message:**
+**PRIMARY DIRECTIVE (when user provides instructions):**
 ```
-You are an expert video editor analyzing meeting transcripts.
-```
+FOLLOW THESE USER INSTRUCTIONS EXACTLY: "[user instructions]"
 
-**Key Instructions:**
-1. Focus on: decisions, action items, announcements, discussions
-2. Clip length: 15-90 seconds
-3. Return: 3-7 clips maximum
-4. Output: JSON array only
-
-**User Message:**
-```
-User guidance: [optional context]
-
----TRANSCRIPT---
-
-[full transcript text]
+If the user's instructions conflict with any guidance below, 
+ALWAYS prioritize the user's instructions above all else.
 ```
 
-### Limitations Identified
+**Default Focus (no user instructions):**
+- Exciting and interesting moments
+- Surprises, drama, insights
+- High-energy content
+- Memorable exchanges
 
-#### 1. **Fixed Model** 🔴
-- No model selection logic
-- No fallback if model unavailable
-- No cost optimization (always uses most expensive)
+**Key Constraints:**
+1. Clip length: 10-120 seconds (expanded from 15-90)
+2. Return: 3-8 clips maximum (expanded from 3-7)
+3. Output: JSON array only
+4. Input: Full VTT with timestamps (not plain text)
 
-#### 2. **Generic Prompt** 🟡
-- Same prompt for all video types (meeting, presentation, tutorial, etc.)
-- No video metadata context (duration, resolution, source)
-- No few-shot examples
-- No domain-specific guidance
+**Input Format:**
+```
+WEBVTT - Video Transcript
 
-#### 3. **Limited Constraints** 🟡
-- Only specifies 15-90 second clips
-- No minimum gap between clips
-- No maximum total duration
-- No guidance on clip diversity
+1
+00:00:15.000 --> 00:00:18.500
+[transcript text]
 
-#### 4. **Simple Validation** 🟡
-- Just matches nearest VTT timestamp
-- No quality scoring
-- No overlap detection
-- No context awareness
+[continues with full VTT structure]
+```
 
-#### 5. **User Experience** 🔴
-- All clips auto-selected
-- No timestamp editing
-- Can't provide feedback for re-analysis
-- Binary select/deselect only
+### Status Update
+
+#### ✅ Resolved in v1.2.0
+1. **Model Selection** - Now uses GPT-5-mini with minimal reasoning
+2. **Cost Optimization** - Minimal reasoning effort reduces API costs
+3. **User Priority** - PRIMARY DIRECTIVE system ensures user control
+4. **VTT Awareness** - AI analyzes full transcript structure with timestamps
+5. **Excitement Focus** - Default prompt finds compelling moments
+6. **Better Constraints** - 10-120s clips, 3-8 maximum
+
+#### ⚠️ Remaining Limitations
+1. **No fallback model** - Hard fails if GPT-5-mini unavailable
+2. **Generic for video types** - Same prompt for meetings, tutorials, vlogs
+3. **No quality scoring** - All clips treated equally
+4. **No overlap detection** - Multiple clips could overlap
+5. **Auto-select all** - Everything selected by default
+6. **Simple validation** - Just matches nearest VTT timestamp
+7. **No clip editing** - Can't adjust timestamps in UI
 
 ## Improvement Priorities
 
@@ -84,8 +84,8 @@ User guidance: [optional context]
 **Dependencies**: Phase 1 validation improvements
 
 ### Phase 3: Model Intelligence (Medium Complexity, Medium Impact)
-1. **Model selection** - Choose based on video complexity
-2. **Fallback strategy** - Use cheaper models if turbo unavailable
+1. **Dynamic reasoning** - Adjust effort based on video complexity  
+2. **Fallback strategy** - Use gpt-4o if gpt-5-mini unavailable
 3. **Token optimization** - Truncate long transcripts intelligently
 4. **Caching** - Save analyses to avoid re-processing
 

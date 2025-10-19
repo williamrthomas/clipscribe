@@ -10,8 +10,8 @@ graph TB
     A -->|2. Upload VTT or Generate| B
     B -->|3. Click Analyze| C[Tauri Backend]
     C -->|4. Parse VTT| D[VTT Parser]
-    D -->|5. Extract Text| E[OpenAI Service]
-    E -->|6. API Call| F[GPT-4 Turbo]
+    D -->|5. Format VTT| E[OpenAI Service]
+    E -->|6. API Call| F[GPT-5-mini]
     F -->|7. JSON Response| E
     E -->|8. Parse Suggestions| C
     C -->|9. Validate Timestamps| G[Timestamp Validator]
@@ -36,7 +36,7 @@ sequenceDiagram
     participant BE as Backend<br/>(Rust/Tauri)
     participant VTT as VTT Parser
     participant AI as OpenAI Service
-    participant GPT as GPT-4 Turbo
+    participant GPT as GPT-5-mini
     participant Val as Validator
     
     U->>FE: Click "Analyze & Find Clips"
@@ -49,23 +49,24 @@ sequenceDiagram
     VTT->>VTT: Parse cues with timestamps
     VTT-->>BE: Vec<VttCue>
     
-    BE->>VTT: get_full_transcript(cues)
-    VTT->>VTT: Concatenate all text
-    VTT-->>BE: String (full transcript)
+    BE->>VTT: get_formatted_vtt(cues)
+    VTT->>VTT: Format with full structure
+    VTT-->>BE: Formatted VTT with timestamps
     
-    BE->>AI: analyze_transcript(api_key, text, context)
-    AI->>AI: Build prompt with system + user messages
-    Note over AI: Model: gpt-4-turbo-preview<br/>Temperature: 0.3<br/>Max tokens: 4000
+    BE->>AI: analyze_transcript(api_key, vtt, context)
+    AI->>AI: Build prompt with USER INSTRUCTIONS FIRST
+    Note over AI: Model: gpt-5-mini<br/>Reasoning: minimal<br/>Verbosity: low
     
-    AI->>GPT: POST /v1/chat/completions
-    Note over AI,GPT: Prompt includes:<br/>- Task description<br/>- Output format (JSON)<br/>- User context (if provided)<br/>- Full transcript
+    AI->>GPT: POST /v1/responses
+    Note over AI,GPT: Prompt structure:<br/>- PRIMARY DIRECTIVE (user context)<br/>- Task description<br/>- VTT transcript with timestamps
     
-    GPT->>GPT: Analyze transcript
-    GPT->>GPT: Identify key moments
-    GPT->>GPT: Generate JSON response
-    GPT-->>AI: JSON string with clips array
+    GPT->>GPT: Analyze VTT (minimal reasoning)
+    GPT->>GPT: Identify exciting/interesting moments
+    GPT->>GPT: Generate JSON response (low verbosity)
+    GPT-->>AI: Nested response structure
     
-    AI->>AI: Parse JSON response
+    AI->>AI: Extract text from output[].content[].text
+    AI->>AI: Parse JSON clips array
     AI-->>BE: Vec<ClipSuggestion>
     
     BE->>Val: validate_and_match(suggestions, vtt_cues)
@@ -86,23 +87,26 @@ sequenceDiagram
 ```mermaid
 graph LR
     A[OpenAI Service] --> B[Model Selection]
-    B --> C[gpt-4-turbo-preview]
+    B --> C[gpt-5-mini-2025-08-07]
     
     A --> D[Parameters]
-    D --> E[temperature: 0.3]
-    D --> F[max_tokens: 4000]
-    D --> G[response_format: json_object]
+    D --> E[reasoning.effort: minimal]
+    D --> F[text.verbosity: low]
+    D --> G[API: /v1/responses]
     
     A --> H[Prompt Engineering]
-    H --> I[System Message]
-    H --> J[User Message]
+    H --> I[User Instructions]
+    H --> J[Default Guidance]
     
-    I --> K[Role Definition:<br/>Expert video editor]
-    I --> L[Task Description:<br/>Find engaging clips]
-    I --> M[Output Format:<br/>JSON schema]
+    I --> K[PRIMARY DIRECTIVE:<br/>User's specific request]
+    I --> L[Always prioritized<br/>over defaults]
     
-    J --> N[User Context<br/>Optional]
-    J --> O[Full Transcript<br/>Required]
+    J --> M[Excitement Focus:<br/>Surprises, drama, insights]
+    J --> N[Task Description:<br/>Find compelling clips]
+    J --> O[Output Format:<br/>JSON with timestamps]
+    
+    style K fill:#FF5722
+    style L fill:#FF5722
     
     style C fill:#4CAF50
     style E fill:#FF9800
@@ -115,60 +119,63 @@ graph LR
 ```mermaid
 graph TD
     A[Raw VTT File] -->|Parse| B[VttCue Array]
-    B -->|Extract Text| C[Plain Text Transcript]
+    B -->|Format with Structure| C[Formatted VTT]
     
-    C -->|+ User Context| D[GPT-4 Prompt]
-    D -->|API Call| E[GPT-4 Response]
-    E -->|Parse JSON| F[ClipSuggestion Array]
+    C -->|+ User Instructions| D[GPT-5 Prompt]
+    D -->|API Call| E[GPT-5 Response]
+    E -->|Extract from nested| F[output[].content[].text]
+    F -->|Parse JSON| G[ClipSuggestion Array]
     
-    F -->|Validate| G{Timestamp Valid?}
-    G -->|Yes| H[Add to ValidatedClip]
-    G -->|No| I[Skip Clip]
+    G -->|Validate| H{Timestamp Valid?}
+    H -->|Yes| I[Add to ValidatedClip]
+    H -->|No| J[Skip Clip]
     
-    H --> J[ValidatedClip Array]
-    J --> K[Frontend Display]
-    K --> L{User Selects?}
-    L -->|Yes| M[Generate Queue]
-    L -->|No| N[Excluded]
+    I --> K[ValidatedClip Array]
+    K --> L[Frontend Display]
+    L --> M{User Selects?}
+    M -->|Yes| N[Generate Queue]
+    M -->|No| O[Excluded]
     
-    M --> O[FFmpeg Processing]
-    O --> P[Output MP4 Files]
+    N --> P[FFmpeg Processing]
+    P --> Q[Output MP4 Files]
     
     style E fill:#4CAF50
-    style J fill:#2196F3
-    style P fill:#9C27B0
+    style K fill:#2196F3
+    style Q fill:#9C27B0
 ```
 
-## 5. Current Prompt Structure
+## 5. Current Prompt Structure (GPT-5)
 
 ```mermaid
 graph TB
-    A[Complete Prompt] --> B[System Message]
-    A --> C[User Message]
+    A[Single Input Prompt] --> B{User Instructions?}
     
-    B --> D[Role Definition]
-    D --> D1["You are an expert video editor..."]
+    B -->|Yes| C[PRIMARY DIRECTIVE]
+    C --> C1["User instructions FIRST"]
+    C --> C2["Always prioritized"]
+    C --> C3["Conflict resolution:<br/>User wins"]
     
-    B --> E[Task Objectives]
-    E --> E1[Identify engaging clips]
-    E --> E2[Suggest timestamps]
-    E --> E3[Create descriptive titles]
+    B -->|No| D[Default Mode]
+    D --> D1["Excitement focus"]
+    D --> D2["Surprises, drama, insights"]
     
-    B --> F[Output Requirements]
-    F --> F1[JSON format]
-    F --> F2[Array of clips]
-    F --> F3[title, start_time, end_time]
+    C --> E[Task Description]
+    D --> E
     
-    C --> G{User Context?}
-    G -->|Yes| H["Context: 'user guidance'"]
-    G -->|No| I[No additional context]
+    E --> F[VTT Analysis]
+    F --> F1["Full VTT with timestamps"]
+    F --> F2["Cue numbers preserved"]
+    F --> F3["Segment boundaries visible"]
     
-    C --> J[Transcript]
-    J --> J1["Transcript:\n[full text]"]
+    E --> G[Output Requirements]
+    G --> G1["JSON array only"]
+    G --> G2["10-120 second clips"]
+    G --> G3["3-8 clips maximum"]
     
-    style A fill:#2196F3
-    style B fill:#4CAF50
-    style C fill:#FF9800
+    style C fill:#FF5722
+    style C1 fill:#FF5722
+    style C2 fill:#FF5722
+    style D fill:#4CAF50
 ```
 
 ## 6. Timestamp Validation Process
@@ -195,50 +202,42 @@ graph TD
     style I fill:#2196F3
 ```
 
-## Current Issues & Limitations
+## Current Status & Remaining Limitations
 
-### 1. Model Selection
-- **Fixed Model**: `gpt-4-turbo-preview` hardcoded
-- **No fallback**: If model unavailable, fails
-- **No cost optimization**: Always uses most expensive model
+### ✅ Resolved (v1.2.0)
+1. **Model Selection** - Now uses GPT-5-mini with minimal reasoning for cost optimization
+2. **User Priority** - User instructions now ALWAYS prioritize over default prompts
+3. **VTT Awareness** - AI analyzes full VTT structure with timestamps
+4. **Excitement Focus** - New default prompt finds compelling moments
+5. **Clip Constraints** - Now enforces 10-120 second length, 3-8 clips
 
-### 2. Prompt Engineering
-- **Generic prompt**: Same for all video types
-- **Limited context**: Only optional user input, no video metadata
-- **No examples**: No few-shot learning examples
-- **No constraints**: Doesn't specify clip length preferences
+### ⚠️ Still Limited
+1. **No fallback model** - If GPT-5-mini unavailable, hard fails
+2. **Simple validation** - Just finds nearest VTT cue, no quality scoring
+3. **No overlap detection** - Multiple clips could overlap
+4. **Auto-select all** - Everything selected by default
+5. **No clip editing** - Can't adjust timestamps in UI
+6. **No re-analysis** - Must start over to change context
 
-### 3. Validation Logic
-- **Simple matching**: Just finds nearest VTT cue
-- **No quality check**: Doesn't verify if timestamp makes sense
-- **No duration limits**: Could suggest very short or very long clips
-- **No overlap detection**: Multiple clips could overlap
-
-### 4. User Control
-- **All or nothing**: User can only select/deselect
-- **No editing**: Can't adjust timestamps
-- **No re-analysis**: Must start over to change context
-- **Auto-select all**: Everything selected by default
-
-## Improvement Opportunities
+## Next Improvements (Priority Order)
 
 ### High Priority
-1. **Dynamic prompt engineering** based on video type/context
-2. **Clip length constraints** (min/max duration)
-3. **Quality scoring** for suggestions
-4. **Better timestamp validation** with content awareness
+1. **Clip quality scoring** - Rank clips by importance/interest level
+2. **Overlap detection** - Warn or auto-resolve overlapping clips
+3. **Better defaults** - Don't auto-select all clips
+4. **Dynamic reasoning** - Adjust effort based on video complexity
 
 ### Medium Priority
-5. **Model selection** based on video length/complexity
-6. **Few-shot examples** in prompt
-7. **Overlap detection** and resolution
-8. **User feedback loop** for prompt refinement
+5. **Few-shot examples** - Include example outputs in prompt
+6. **Video type detection** - Adjust prompt for meetings, tutorials, vlogs
+7. **Metadata injection** - Pass video duration, topics to AI
+8. **Fallback model** - Use gpt-4o if gpt-5-mini unavailable
 
 ### Low Priority
-9. **Multiple model comparison** (A/B testing)
-10. **Caching** for repeated analyses
-11. **Incremental analysis** for long videos
-12. **Custom prompt templates** by use case
+9. **Clip editing UI** - Adjust timestamps before generation
+10. **Re-analysis** - Change context without re-uploading
+11. **Caching** - Save analyses for repeated use
+12. **A/B testing** - Compare different prompt strategies
 
 ---
 
