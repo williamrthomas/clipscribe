@@ -1,0 +1,27 @@
+[package]
+name = "clipscribe"
+version = "1.0.0"
+description = "AI-powered video clip extraction tool"
+authors = ["William Thomas"]
+license = ""
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [ "shell-open", "dialog-open", "protocol-asset", "shell-sidecar", "fs-all", "path-all"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "multipart"] }
+regex = "1.10"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

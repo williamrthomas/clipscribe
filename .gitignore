@@ -1,0 +1,66 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tauri
+src-tauri/target
+src-tauri/Cargo.lock
+
+# FFmpeg binaries (large files, download separately)
+src-tauri/bin/ffmpeg*
+!src-tauri/bin/.gitkeep
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Settings
+settings.dat
+settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+*.dmg
+*.app
+*.msi
+*.exe
+*.deb
+*.AppImage
+
+# Logs and debugging
+logs/*.log
+logs/*.txt
+tests/output/
+rca/*.log
+
+# Large test files
+samples/*.mov
+samples/*.mp4
+samples/*.mkv
+samples/*_temp_audio.mp3
+samples/*_Clips/
